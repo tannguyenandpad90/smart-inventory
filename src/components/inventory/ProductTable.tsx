@@ -3,7 +3,10 @@
 import { useMemo, useState } from "react";
 import { Product } from "@/types/inventory";
 import { products } from "@/lib/mock-data";
-import { Pencil, Trash2, Package, Search } from "lucide-react";
+import { Pencil, Trash2, Package, Search, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+
+type SortField = "price" | "stock";
+type SortDirection = "asc" | "desc";
 
 function StockBadge({ stock }: { stock: number }) {
   if (stock === 0) {
@@ -46,16 +49,52 @@ const categories = Array.from(new Set(products.map((p) => p.category))).sort();
 export default function ProductTable() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+  function handleSort(field: SortField) {
+    if (sortField === field) {
+      if (sortDirection === "desc") {
+        setSortField(null);
+        setSortDirection("asc");
+      } else {
+        setSortDirection("desc");
+      }
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  }
+
+  function SortIcon({ field }: { field: SortField }) {
+    if (sortField !== field) {
+      return <ArrowUpDown className="h-3.5 w-3.5 text-slate-300" />;
+    }
+    return sortDirection === "asc" ? (
+      <ArrowUp className="h-3.5 w-3.5 text-slate-700" />
+    ) : (
+      <ArrowDown className="h-3.5 w-3.5 text-slate-700" />
+    );
+  }
 
   const filtered = useMemo(() => {
     const query = search.toLowerCase();
-    return products.filter((p) => {
+    const result = products.filter((p) => {
       const matchesSearch = !query || p.name.toLowerCase().includes(query);
       const matchesCategory =
         !selectedCategory || p.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [search, selectedCategory]);
+
+    if (sortField) {
+      result.sort((a, b) => {
+        const diff = a[sortField] - b[sortField];
+        return sortDirection === "asc" ? diff : -diff;
+      });
+    }
+
+    return result;
+  }, [search, selectedCategory, sortField, sortDirection]);
 
   return (
     <div className="w-full">
@@ -111,11 +150,21 @@ export default function ProductTable() {
               <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Category
               </th>
-              <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Price
+              <th
+                className="cursor-pointer select-none px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500 transition-colors hover:text-slate-700"
+                onClick={() => handleSort("price")}
+              >
+                <span className="inline-flex items-center gap-1">
+                  Price <SortIcon field="price" />
+                </span>
               </th>
-              <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Stock
+              <th
+                className="cursor-pointer select-none px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500 transition-colors hover:text-slate-700"
+                onClick={() => handleSort("stock")}
+              >
+                <span className="inline-flex items-center gap-1">
+                  Stock <SortIcon field="stock" />
+                </span>
               </th>
               <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Actions
