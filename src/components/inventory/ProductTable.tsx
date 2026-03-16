@@ -2,8 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { Product } from "@/types/inventory";
-import { products } from "@/lib/mock-data";
-import { Pencil, Trash2, Package, Search, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { products as initialProducts } from "@/lib/mock-data";
+import { Pencil, Trash2, Package, Search, Plus, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import AddProductModal from "./AddProductModal";
+import EditProductModal from "./EditProductModal";
+import DeleteConfirmModal from "./DeleteConfirmModal";
 
 type SortField = "price" | "stock";
 type SortDirection = "asc" | "desc";
@@ -44,13 +47,20 @@ function formatCurrency(value: number) {
   }).format(value);
 }
 
-const categories = Array.from(new Set(products.map((p) => p.category))).sort();
-
 export default function ProductTable() {
+  const [products, setProducts] = useState<Product[]>(initialProducts);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
+
+  const categories = useMemo(
+    () => Array.from(new Set(products.map((p) => p.category))).sort(),
+    [products]
+  );
 
   function handleSort(field: SortField) {
     if (sortField === field) {
@@ -94,7 +104,21 @@ export default function ProductTable() {
     }
 
     return result;
-  }, [search, selectedCategory, sortField, sortDirection]);
+  }, [products, search, selectedCategory, sortField, sortDirection]);
+
+  function handleAddProduct(product: Product) {
+    setProducts((prev) => [...prev, product]);
+  }
+
+  function handleUpdateProduct(updated: Product) {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === updated.id ? updated : p))
+    );
+  }
+
+  function handleDeleteProduct(id: string) {
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+  }
 
   return (
     <div className="w-full">
@@ -111,6 +135,13 @@ export default function ProductTable() {
             </p>
           </div>
         </div>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800"
+        >
+          <Plus className="h-4 w-4" />
+          Add Product
+        </button>
       </div>
 
       {/* Search & Filter Bar */}
@@ -206,12 +237,14 @@ export default function ProductTable() {
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-1">
                       <button
+                        onClick={() => setEditingProduct(product)}
                         className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
                         title="Edit"
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
                       <button
+                        onClick={() => setDeletingProduct(product)}
                         className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
                         title="Delete"
                       >
@@ -225,6 +258,23 @@ export default function ProductTable() {
           </tbody>
         </table>
       </div>
+
+      {/* Modals */}
+      <AddProductModal
+        open={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onAdd={handleAddProduct}
+      />
+      <EditProductModal
+        product={editingProduct}
+        onClose={() => setEditingProduct(null)}
+        onUpdate={handleUpdateProduct}
+      />
+      <DeleteConfirmModal
+        product={deletingProduct}
+        onClose={() => setDeletingProduct(null)}
+        onDeleted={handleDeleteProduct}
+      />
     </div>
   );
 }
