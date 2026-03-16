@@ -1,5 +1,6 @@
 import ProductTable from "@/components/inventory/ProductTable";
 import AIAnalysisButton from "@/components/inventory/AIAnalysisButton";
+import Dashboard from "@/components/inventory/Dashboard";
 
 export default function Home() {
   return (
@@ -8,6 +9,7 @@ export default function Home() {
         <h1 className="mb-8 text-2xl font-bold tracking-tight text-slate-900">
           Hệ thống Quản lý Kho thông minh
         </h1>
+        <Dashboard />
         <ProductTable />
         <div className="mt-6">
           <AIAnalysisButton />
