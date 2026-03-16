@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAll, create } from "@/lib/product-store";
+import { prisma } from "@/lib/prisma";
 
-export function GET() {
-  return NextResponse.json(getAll());
+export async function GET() {
+  const products = await prisma.product.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+  return NextResponse.json(products);
 }
 
 export async function POST(request: NextRequest) {
@@ -39,6 +42,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const product = create({ name: name.trim(), stock, price, category: category.trim() });
+  const product = await prisma.product.create({
+    data: { name: name.trim(), stock, price, category: category.trim() },
+  });
   return NextResponse.json(product, { status: 201 });
 }

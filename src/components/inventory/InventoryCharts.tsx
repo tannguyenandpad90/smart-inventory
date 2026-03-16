@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { products } from "@/lib/mock-data";
+import { useEffect, useMemo, useState } from "react";
+import { Product } from "@/types/inventory";
 import { BarChart3 } from "lucide-react";
 import {
   BarChart,
@@ -31,6 +31,15 @@ const COLORS = [
 ];
 
 export default function InventoryCharts() {
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch(() => {});
+  }, []);
+
   const { stockByCategory, valueByCategory } = useMemo(() => {
     const categoryMap = new Map<string, { stock: number; value: number }>();
 
@@ -54,7 +63,7 @@ export default function InventoryCharts() {
       .sort((a, b) => b.value - a.value);
 
     return { stockByCategory, valueByCategory };
-  }, []);
+  }, [products]);
 
   return (
     <div className="mb-8">

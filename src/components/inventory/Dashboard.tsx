@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { products } from "@/lib/mock-data";
+import { useEffect, useMemo, useState } from "react";
+import { Product } from "@/types/inventory";
 import { Package, DollarSign, AlertTriangle, TrendingUp } from "lucide-react";
 
 interface StatCardProps {
@@ -41,15 +41,24 @@ function formatCurrency(value: number) {
 }
 
 export default function Dashboard() {
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch(() => {});
+  }, []);
+
   const stats = useMemo(() => {
     const totalProducts = products.length;
     const totalValue = products.reduce((sum, p) => sum + p.price * p.stock, 0);
     const lowStockItems = products.filter((p) => p.stock <= 20);
     const totalUnits = products.reduce((sum, p) => sum + p.stock, 0);
-    const avgPrice = products.reduce((sum, p) => sum + p.price, 0) / totalProducts;
+    const avgPrice = totalProducts > 0 ? products.reduce((sum, p) => sum + p.price, 0) / totalProducts : 0;
 
     return { totalProducts, totalValue, lowStockItems, totalUnits, avgPrice };
-  }, []);
+  }, [products]);
 
   return (
     <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

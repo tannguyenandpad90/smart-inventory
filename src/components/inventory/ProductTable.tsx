@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Product } from "@/types/inventory";
-import { products as initialProducts } from "@/lib/mock-data";
 import { Pencil, Trash2, Package, Search, Plus, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, Download } from "lucide-react";
 
 const PAGE_SIZE = 5;
@@ -52,7 +51,14 @@ function formatCurrency(value: number) {
 
 export default function ProductTable() {
   const { toast } = useToast();
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch(() => {});
+  }, []);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [sortField, setSortField] = useState<SortField | null>(null);

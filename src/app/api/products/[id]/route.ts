@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getById, update, remove } from "@/lib/product-store";
+import { prisma } from "@/lib/prisma";
 
 type RouteContext = { params: { id: string } };
 
-export function GET(_request: NextRequest, { params }: RouteContext) {
-  const product = getById(params.id);
+export async function GET(_request: NextRequest, { params }: RouteContext) {
+  const product = await prisma.product.findUnique({
+    where: { id: params.id },
+  });
   if (!product) {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
   }
@@ -12,7 +14,9 @@ export function GET(_request: NextRequest, { params }: RouteContext) {
 }
 
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
-  const existing = getById(params.id);
+  const existing = await prisma.product.findUnique({
+    where: { id: params.id },
+  });
   if (!existing) {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
   }
@@ -67,14 +71,18 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     );
   }
 
-  const updated = update(params.id, updates);
+  const updated = await prisma.product.update({
+    where: { id: params.id },
+    data: updates,
+  });
   return NextResponse.json(updated);
 }
 
-export function DELETE(_request: NextRequest, { params }: RouteContext) {
-  const deleted = remove(params.id);
-  if (!deleted) {
+export async function DELETE(_request: NextRequest, { params }: RouteContext) {
+  try {
+    await prisma.product.delete({ where: { id: params.id } });
+    return NextResponse.json({ message: "Product deleted" });
+  } catch {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
   }
-  return NextResponse.json({ message: "Product deleted" });
 }

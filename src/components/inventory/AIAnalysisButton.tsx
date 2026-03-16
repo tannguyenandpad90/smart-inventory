@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Sparkles, Loader2, X } from "lucide-react";
-import { products } from "@/lib/mock-data";
 
 export default function AIAnalysisButton() {
   const [analysis, setAnalysis] = useState<string | null>(null);
@@ -15,6 +14,10 @@ export default function AIAnalysisButton() {
     setAnalysis(null);
 
     try {
+      const productsRes = await fetch("/api/products");
+      if (!productsRes.ok) throw new Error("Failed to load products");
+      const products = await productsRes.json();
+
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
