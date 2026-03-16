@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Product } from "@/types/inventory";
 import { products as initialProducts } from "@/lib/mock-data";
-import { Pencil, Trash2, Package, Search, Plus, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Pencil, Trash2, Package, Search, Plus, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, Download } from "lucide-react";
 
 const PAGE_SIZE = 5;
 import AddProductModal from "./AddProductModal";
@@ -133,6 +133,26 @@ export default function ProductTable() {
     toast(`"${deleted?.name}" deleted successfully`);
   }
 
+  function handleExportCSV() {
+    const headers = ["ID", "Name", "Category", "Price", "Stock"];
+    const rows = filtered.map((p) => [
+      p.id,
+      `"${p.name.replace(/"/g, '""')}"`,
+      p.category,
+      p.price.toFixed(2),
+      String(p.stock),
+    ]);
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `inventory-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast(`Exported ${filtered.length} products to CSV`, "info");
+  }
+
   return (
     <div className="w-full">
       {/* Header */}
@@ -148,13 +168,22 @@ export default function ProductTable() {
             </p>
           </div>
         </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
-        >
-          <Plus className="h-4 w-4" />
-          Add Product
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportCSV}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+          >
+            <Download className="h-4 w-4" />
+            Export
+          </button>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
+          >
+            <Plus className="h-4 w-4" />
+            Add Product
+          </button>
+        </div>
       </div>
 
       {/* Search & Filter Bar */}
