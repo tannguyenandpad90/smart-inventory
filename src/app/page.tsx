@@ -1,6 +1,7 @@
 import ProductTable from "@/components/inventory/ProductTable";
 import AIAnalysisButton from "@/components/inventory/AIAnalysisButton";
 import Dashboard from "@/components/inventory/Dashboard";
+import InventoryCharts from "@/components/inventory/InventoryCharts";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 
 export default function Home() {
@@ -14,6 +15,7 @@ export default function Home() {
           <ThemeToggle />
         </div>
         <Dashboard />
+        <InventoryCharts />
         <ProductTable />
         <div className="mt-6">
           <AIAnalysisButton />
