@@ -1,23 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
 import { Product } from "@/types/inventory";
 
-interface EditProductModalProps {
-  product: Product | null;
+interface AddProductModalProps {
+  open: boolean;
   onClose: () => void;
-  onUpdate: (product: Product) => void;
+  onAdd: (product: Product) => void;
 }
 
 const inputClass =
   "w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-slate-600 dark:focus:ring-slate-700";
 
-export default function EditProductModal({
-  product,
+export default function AddProductModal({
+  open,
   onClose,
-  onUpdate,
-}: EditProductModalProps) {
+  onAdd,
+}: AddProductModalProps) {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
@@ -25,17 +25,15 @@ export default function EditProductModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (product) {
-      setName(product.name);
-      setCategory(product.category);
-      setPrice(String(product.price));
-      setStock(String(product.stock));
-      setError(null);
-    }
-  }, [product]);
+  if (!open) return null;
 
-  if (!product) return null;
+  function reset() {
+    setName("");
+    setCategory("");
+    setPrice("");
+    setStock("");
+    setError(null);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,8 +41,8 @@ export default function EditProductModal({
     setLoading(true);
 
     try {
-      const res = await fetch(`/api/products/${product!.id}`, {
-        method: "PATCH",
+      const res = await fetch("/api/products", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
@@ -56,11 +54,12 @@ export default function EditProductModal({
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error ?? "Failed to update product");
+        throw new Error(data.error ?? "Failed to add product");
       }
 
-      const updated: Product = await res.json();
-      onUpdate(updated);
+      const product: Product = await res.json();
+      onAdd(product);
+      reset();
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -79,7 +78,7 @@ export default function EditProductModal({
       <div className="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-900">
         <div className="mb-5 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            Edit Product
+            Add New Product
           </h3>
           <button
             onClick={onClose}
@@ -105,6 +104,7 @@ export default function EditProductModal({
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Apple AirPods Pro"
               className={inputClass}
             />
           </div>
@@ -118,6 +118,7 @@ export default function EditProductModal({
               required
               value={category}
               onChange={(e) => setCategory(e.target.value)}
+              placeholder="e.g. Audio"
               className={inputClass}
             />
           </div>
@@ -134,6 +135,7 @@ export default function EditProductModal({
                 step="0.01"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
+                placeholder="0.00"
                 className={inputClass}
               />
             </div>
@@ -148,6 +150,7 @@ export default function EditProductModal({
                 step="1"
                 value={stock}
                 onChange={(e) => setStock(e.target.value)}
+                placeholder="0"
                 className={inputClass}
               />
             </div>
@@ -166,7 +169,7 @@ export default function EditProductModal({
               disabled={loading}
               className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
             >
-              {loading ? "Saving..." : "Save Changes"}
+              {loading ? "Adding..." : "Add Product"}
             </button>
           </div>
         </form>

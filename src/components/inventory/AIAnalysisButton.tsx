@@ -51,28 +51,28 @@ export default function AIAnalysisButton() {
       </button>
 
       {error && (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400">
           {error}
         </div>
       )}
 
       {analysis && (
-        <div className="mt-4 rounded-xl border border-violet-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-violet-100 px-5 py-3">
+        <div className="mt-4 rounded-xl border border-violet-200 bg-white shadow-sm dark:border-violet-800 dark:bg-slate-900">
+          <div className="flex items-center justify-between border-b border-violet-100 px-5 py-3 dark:border-violet-800">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-violet-600" />
-              <span className="text-sm font-semibold text-slate-900">
+              <Sparkles className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+              <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 AI Inventory Insights
               </span>
             </div>
             <button
               onClick={() => setAnalysis(null)}
-              className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+              className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
-          <div className="px-5 py-4 text-sm leading-relaxed text-slate-700 whitespace-pre-wrap">
+          <div className="px-5 py-4 text-sm leading-relaxed text-slate-700 whitespace-pre-wrap dark:text-slate-300">
             {analysis}
           </div>
         </div>

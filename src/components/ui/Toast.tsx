@@ -38,9 +38,9 @@ const icons: Record<ToastType, ReactNode> = {
 };
 
 const bgColors: Record<ToastType, string> = {
-  success: "border-emerald-200 bg-emerald-50",
-  error: "border-red-200 bg-red-50",
-  info: "border-blue-200 bg-blue-50",
+  success: "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950",
+  error: "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950",
+  info: "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950",
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -73,7 +73,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             }}
           >
             {icons[t.type]}
-            <p className="text-sm font-medium text-slate-800">{t.message}</p>
+            <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{t.message}</p>
             <button
               onClick={() => dismiss(t.id)}
               className="ml-2 rounded p-0.5 text-slate-400 transition-colors hover:text-slate-600"
