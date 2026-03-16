@@ -3,7 +3,9 @@
 import { useMemo, useState } from "react";
 import { Product } from "@/types/inventory";
 import { products as initialProducts } from "@/lib/mock-data";
-import { Pencil, Trash2, Package, Search, Plus, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { Pencil, Trash2, Package, Search, Plus, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+
+const PAGE_SIZE = 5;
 import AddProductModal from "./AddProductModal";
 import EditProductModal from "./EditProductModal";
 import DeleteConfirmModal from "./DeleteConfirmModal";
@@ -56,6 +58,7 @@ export default function ProductTable() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
+  const [page, setPage] = useState(1);
 
   const categories = useMemo(
     () => Array.from(new Set(products.map((p) => p.category))).sort(),
@@ -103,8 +106,12 @@ export default function ProductTable() {
       });
     }
 
+    setPage(1);
     return result;
   }, [products, search, selectedCategory, sortField, sortDirection]);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   function handleAddProduct(product: Product) {
     setProducts((prev) => [...prev, product]);
@@ -203,7 +210,7 @@ export default function ProductTable() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {filtered.length === 0 ? (
+            {paginated.length === 0 ? (
               <tr>
                 <td
                   colSpan={5}
@@ -213,7 +220,7 @@ export default function ProductTable() {
                 </td>
               </tr>
             ) : (
-              filtered.map((product: Product) => (
+              paginated.map((product: Product) => (
                 <tr
                   key={product.id}
                   className="transition-colors hover:bg-slate-50/60"
@@ -258,6 +265,54 @@ export default function ProductTable() {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-between rounded-xl border border-slate-200 bg-white px-5 py-3 shadow-sm">
+          <p className="text-sm text-slate-500">
+            Showing{" "}
+            <span className="font-medium text-slate-700">
+              {(page - 1) * PAGE_SIZE + 1}
+            </span>
+            {" - "}
+            <span className="font-medium text-slate-700">
+              {Math.min(page * PAGE_SIZE, filtered.length)}
+            </span>
+            {" of "}
+            <span className="font-medium text-slate-700">{filtered.length}</span>
+            {" results"}
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className={`min-w-[2rem] rounded-lg px-2 py-1.5 text-sm font-medium transition-colors ${
+                  p === page
+                    ? "bg-slate-900 text-white"
+                    : "text-slate-600 hover:bg-slate-100"
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       <AddProductModal
