@@ -9,6 +9,7 @@ const PAGE_SIZE = 5;
 import AddProductModal from "./AddProductModal";
 import EditProductModal from "./EditProductModal";
 import DeleteConfirmModal from "./DeleteConfirmModal";
+import { useToast } from "@/components/ui/Toast";
 
 type SortField = "price" | "stock";
 type SortDirection = "asc" | "desc";
@@ -50,6 +51,7 @@ function formatCurrency(value: number) {
 }
 
 export default function ProductTable() {
+  const { toast } = useToast();
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -115,16 +117,20 @@ export default function ProductTable() {
 
   function handleAddProduct(product: Product) {
     setProducts((prev) => [...prev, product]);
+    toast(`"${product.name}" added successfully`);
   }
 
   function handleUpdateProduct(updated: Product) {
     setProducts((prev) =>
       prev.map((p) => (p.id === updated.id ? updated : p))
     );
+    toast(`"${updated.name}" updated successfully`);
   }
 
   function handleDeleteProduct(id: string) {
+    const deleted = products.find((p) => p.id === id);
     setProducts((prev) => prev.filter((p) => p.id !== id));
+    toast(`"${deleted?.name}" deleted successfully`);
   }
 
   return (
